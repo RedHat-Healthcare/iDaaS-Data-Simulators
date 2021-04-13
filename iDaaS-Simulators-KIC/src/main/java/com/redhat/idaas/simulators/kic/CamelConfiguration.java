@@ -76,6 +76,21 @@ public class CamelConfiguration extends RouteBuilder {
 
   @Override
   public void configure() throws Exception {
+    from("direct:auditing")
+            .setHeader("messageprocesseddate").simple("${date:now:yyyy-MM-dd}")
+            .setHeader("messageprocessedtime").simple("${date:now:HH:mm:ss:SSS}")
+            .setHeader("processingtype").exchangeProperty("processingtype")
+            .setHeader("industrystd").exchangeProperty("industrystd")
+            .setHeader("component").exchangeProperty("componentname")
+            .setHeader("messagetrigger").exchangeProperty("messagetrigger")
+            .setHeader("processname").exchangeProperty("processname")
+            .setHeader("auditdetails").exchangeProperty("auditdetails")
+            .setHeader("camelID").exchangeProperty("camelID")
+            .setHeader("exchangeID").exchangeProperty("exchangeID")
+            .setHeader("internalMsgID").exchangeProperty("internalMsgID")
+            .setHeader("bodyData").exchangeProperty("bodyData")
+            .convertBodyTo(String.class).to(getKafkaTopicUri("opsmgmt_platformtransactions"))
+    ;
 
     /*
      * Direct Logging
@@ -90,6 +105,19 @@ public class CamelConfiguration extends RouteBuilder {
             .routeId("KICTopicSimulator")
             .routeDescription("KICTopicSimulator")
             .convertBodyTo(String.class)
-            .to(getKafkaTopicUri("opsmgmt_platformtransactions"));
+            // set Auditing Properties
+            .setProperty("processingtype").constant("data")
+            .setProperty("appname").constant("iDAAS-Simulation-KIC")
+            .setProperty("industrystd").constant("File")
+            .setProperty("messagetrigger").constant("UNDF")
+            .setProperty("componentname").simple("${routeId}")
+            .setProperty("processname").constant("Input")
+            .setProperty("camelID").simple("${camelId}")
+            .setProperty("exchangeID").simple("${exchangeId}")
+            .setProperty("internalMsgID").simple("${id}")
+            .setProperty("bodyData").simple("${body}")
+            .setProperty("auditdetails").constant("KIC Simulation message received")
+            // iDAAS DataHub Processing
+            .wireTap("direct:auditing");
   }
 }
