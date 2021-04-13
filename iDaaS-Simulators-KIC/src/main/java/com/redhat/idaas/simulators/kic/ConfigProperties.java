@@ -19,17 +19,24 @@ package com.redhat.idaas.simulators.kic;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @SuppressWarnings("ConfigurationProperties")
-@ConfigurationProperties(prefix = "idaas")
+@ConfigurationProperties(prefix = "")
 public class ConfigProperties {
 
     private String kafkaBrokers;
-    private String kicADTDirectory;
+    private String kicDirectory;
+
     public String getKafkaBrokers() {
         return kafkaBrokers;
     }
-    public String getHl7ADTDirectory() { return kicADTDirectory;}
+
     public void setKafkaBrokers(String kafkaBrokers) {
         this.kafkaBrokers = kafkaBrokers;
     }
-    public void setkicADTDirectory(String kicADTDirectory) { this.kicADTDirectory = kicADTDirectory; }
+
+    public void setkicDirectory(String kicDirectory) {
+        this.kicDirectory = kicDirectory;
+    }
+    public String getkicDirectory() {
+        return kicDirectory;
+    }
 }
