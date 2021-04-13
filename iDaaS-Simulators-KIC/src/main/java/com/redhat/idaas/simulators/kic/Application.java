@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  *
  */
-package com.redhat.idaas.simulators.hl7;
+package com.redhat.idaas.simulators.kic;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

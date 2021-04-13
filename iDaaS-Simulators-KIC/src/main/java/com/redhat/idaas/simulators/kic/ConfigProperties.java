@@ -14,12 +14,12 @@
  * permissions and limitations under the License.
  *
  */
-package com.redhat.idaas.simulators.hl7;
+package com.redhat.idaas.simulators.kic;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @SuppressWarnings("ConfigurationProperties")
-@ConfigurationProperties(prefix = "")
+@ConfigurationProperties(prefix = "idaas")
 public class ConfigProperties {
 
     private String kafkaBrokers;
@@ -27,7 +27,7 @@ public class ConfigProperties {
     public String getKafkaBrokers() {
         return kafkaBrokers;
     }
-    public String getHl7ADTDirectory() { return hl7ADTDirectory;}
+    public String getHl7ADTDirectory() { return kicADTDirectory;}
     public void setKafkaBrokers(String kafkaBrokers) {
         this.kafkaBrokers = kafkaBrokers;
     }

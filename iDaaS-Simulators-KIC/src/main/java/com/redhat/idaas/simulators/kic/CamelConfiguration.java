@@ -21,6 +21,7 @@ import java.util.List;
 
 //import javax.jms.ConnectionFactory;
 
+import com.redhat.idaas.simulators.kic.ConfigProperties;
 import org.apache.camel.component.hl7.HL7MLLPNettyDecoderFactory;
 import org.apache.camel.component.hl7.HL7MLLPNettyEncoderFactory;
 import org.apache.camel.Exchange;
