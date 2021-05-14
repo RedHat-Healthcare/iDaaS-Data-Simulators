@@ -113,7 +113,10 @@ public class CamelConfiguration extends RouteBuilder {
   private String getKafkaTopicUri(String topic) {
     return "kafka:" + topic + "?brokers=" + config.getKafkaBrokers();
   }
-
+  private String getHL7Uri(String hostID, int port) {
+    String svrConnection = "netty4:tcp://"+ hostID +":" + port + "?sync=true&decoder=#hl7Decoder&encoder=#hl7Encoder";
+    return svrConnection;
+  }
   @Override
   public void configure() throws Exception {
 
@@ -141,8 +144,6 @@ public class CamelConfiguration extends RouteBuilder {
 
     /*
      *  HL7 File to HL7 Server
-     *  Sample: CSV ETL Process to Topic
-     *  parse and process to Topic
      *
      */
         from("file:{{hl7ADTDirectory}}/?delete=true")
@@ -151,10 +152,10 @@ public class CamelConfiguration extends RouteBuilder {
             .routeId("hl7ADTSimulator")
             .routeDescription("hl7ADTSimulator")
             .convertBodyTo(String.class)
-            .setProperty("processingtype").constant("csv-data")
+            .setProperty("processingtype").constant("hl7-sim")
             .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
-            .setProperty("industrystd").constant("CSV")
-            .setProperty("messagetrigger").constant("CSVFile")
+            .setProperty("industrystd").constant("HL7")
+            .setProperty("messagetrigger").constant("ADT")
             .setProperty("component").simple("${routeId}")
             .setProperty("camelID").simple("${camelId}")
             .setProperty("exchangeID").simple("${exchangeId}")
@@ -164,8 +165,33 @@ public class CamelConfiguration extends RouteBuilder {
             .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
             .wireTap("direct:auditing")
             //.to("netty4:tcp://0.0.0.0:10001?sync=false&encoder=")
-            .to("netty4:tcp://localhost:10001??sync=true&decoder=#hl7Decoder&encoder=#hl7Encoder")
-            //&exchangePattern=INOUT
+            //.to("netty4:tcp://localhost:10001??sync=true&decoder=#hl7Decoder&encoder=#hl7Encoder")
+            //getHL7Uri(config.getAdtHost,config.getAdtPort())
+            .to(getHL7Uri(config.getAdtHost,config.getAdtPort()))
+            // Process Acks that come back ??
+        ;
+    from("file:{{hl7ORMDirectory}}/?delete=true")
+            //file://inputdir/?recursive=true&delete=true
+            // Auditing
+            .routeId("hl7ORMSimulator")
+            .routeDescription("hl7ORMSimulator")
+            .convertBodyTo(String.class)
+            .setProperty("processingtype").constant("hl7-sim")
+            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("industrystd").constant("HL7")
+            .setProperty("messagetrigger").constant("ORM")
+            .setProperty("component").simple("${routeId}")
+            .setProperty("camelID").simple("${camelId}")
+            .setProperty("exchangeID").simple("${exchangeId}")
+            .setProperty("internalMsgID").simple("${id}")
+            .setProperty("bodyData").simple("${body}")
+            .setProperty("processname").constant("Input")
+            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+            .wireTap("direct:auditing")
+            //.to("netty4:tcp://0.0.0.0:10001?sync=false&encoder=")
+            //.to("netty4:tcp://localhost:10001??sync=true&decoder=#hl7Decoder&encoder=#hl7Encoder")
+            //getHL7Uri(config.getAdtHost,config.getAdtPort())
+            .to(getHL7Uri(config.getOrmHost,config.getOrmPort()))
     ;
   }
 }
