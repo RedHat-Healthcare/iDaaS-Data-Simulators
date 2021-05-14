@@ -113,10 +113,17 @@ public class CamelConfiguration extends RouteBuilder {
   private String getKafkaTopicUri(String topic) {
     return "kafka:" + topic + "?brokers=" + config.getKafkaBrokers();
   }
+
   private String getHL7Uri(String hostID, int port) {
-    String svrConnection = "netty4:tcp://"+ hostID +":" + port + "?sync=true&decoder=#hl7Decoder&encoder=#hl7Encoder";
+    String portNumber = String.valueOf(port);
+    String svrConnection = "netty4:tcp://"+ hostID +":" + portNumber + "?sync=true&decoder=#hl7Decoder&encoder=#hl7Encoder";
     return svrConnection;
   }
+
+  private String getHL7UriDirectory(String dirName) {
+    return "file:src/" + dirName + "?delete=true?noop=true";
+  }
+
   @Override
   public void configure() throws Exception {
 
@@ -144,10 +151,10 @@ public class CamelConfiguration extends RouteBuilder {
 
     /*
      *  HL7 File to HL7 Server
+     *  It will automatically create the directory for you, you will just need to place files in it
      *
      */
-        from("file:{{hl7ADTDirectory}}/?delete=true")
-            //file://inputdir/?recursive=true&delete=true
+        from(getHL7UriDirectory(config.getHl7ADT_Directory()))
             // Auditing
             .routeId("hl7ADTSimulator")
             .routeDescription("hl7ADTSimulator")
@@ -164,14 +171,11 @@ public class CamelConfiguration extends RouteBuilder {
             .setProperty("processname").constant("Input")
             .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
             .wireTap("direct:auditing")
-            //.to("netty4:tcp://0.0.0.0:10001?sync=false&encoder=")
-            //.to("netty4:tcp://localhost:10001??sync=true&decoder=#hl7Decoder&encoder=#hl7Encoder")
-            //getHL7Uri(config.getAdtHost,config.getAdtPort())
-            .to(getHL7Uri(config.getAdtHost,config.getAdtPort()))
+            .to(getHL7Uri(config.getAdtHost(),config.getAdtPort()))
             // Process Acks that come back ??
         ;
-    from("file:{{hl7ORMDirectory}}/?delete=true")
-            //file://inputdir/?recursive=true&delete=true
+
+    from(getHL7UriDirectory(config.getHl7ORM_Directory()))
             // Auditing
             .routeId("hl7ORMSimulator")
             .routeDescription("hl7ORMSimulator")
@@ -188,10 +192,132 @@ public class CamelConfiguration extends RouteBuilder {
             .setProperty("processname").constant("Input")
             .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
             .wireTap("direct:auditing")
-            //.to("netty4:tcp://0.0.0.0:10001?sync=false&encoder=")
-            //.to("netty4:tcp://localhost:10001??sync=true&decoder=#hl7Decoder&encoder=#hl7Encoder")
-            //getHL7Uri(config.getAdtHost,config.getAdtPort())
-            .to(getHL7Uri(config.getOrmHost,config.getOrmPort()))
+            .to(getHL7Uri(config.getOrmHost(),config.getOrmPort()))
+            // Process Acks that come back ??
+    ;
+    from(getHL7UriDirectory(config.getHl7ORU_Directory()))
+            // Auditing
+            .routeId("hl7ORUSimulator")
+            .routeDescription("hl7ORUSimulator")
+            .convertBodyTo(String.class)
+            .setProperty("processingtype").constant("hl7-sim")
+            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("industrystd").constant("HL7")
+            .setProperty("messagetrigger").constant("ORU")
+            .setProperty("component").simple("${routeId}")
+            .setProperty("camelID").simple("${camelId}")
+            .setProperty("exchangeID").simple("${exchangeId}")
+            .setProperty("internalMsgID").simple("${id}")
+            .setProperty("bodyData").simple("${body}")
+            .setProperty("processname").constant("Input")
+            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+            .wireTap("direct:auditing")
+            .to(getHL7Uri(config.getOruHost(),config.getOruPort()))
+            // Process Acks that come back ??
+    ;
+    from(getHL7UriDirectory(config.getHl7MFN_Directory()))
+            // Auditing
+            .routeId("hl7MFNSimulator")
+            .routeDescription("hl7MFNSimulator")
+            .convertBodyTo(String.class)
+            .setProperty("processingtype").constant("hl7-sim")
+            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("industrystd").constant("HL7")
+            .setProperty("messagetrigger").constant("MFN")
+            .setProperty("component").simple("${routeId}")
+            .setProperty("camelID").simple("${camelId}")
+            .setProperty("exchangeID").simple("${exchangeId}")
+            .setProperty("internalMsgID").simple("${id}")
+            .setProperty("bodyData").simple("${body}")
+            .setProperty("processname").constant("Input")
+            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+            .wireTap("direct:auditing")
+            .to(getHL7Uri(config.getMfnHost(),config.getMfnPort()))
+            // Process Acks that come back ??
+    ;
+
+    from(getHL7UriDirectory(config.getHl7MDM_Directory()))
+            // Auditing
+            .routeId("hl7MDMSimulator")
+            .routeDescription("hl7MDMSimulator")
+            .convertBodyTo(String.class)
+            .setProperty("processingtype").constant("hl7-sim")
+            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("industrystd").constant("HL7")
+            .setProperty("messagetrigger").constant("MDM")
+            .setProperty("component").simple("${routeId}")
+            .setProperty("camelID").simple("${camelId}")
+            .setProperty("exchangeID").simple("${exchangeId}")
+            .setProperty("internalMsgID").simple("${id}")
+            .setProperty("bodyData").simple("${body}")
+            .setProperty("processname").constant("Input")
+            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+            .wireTap("direct:auditing")
+            .to(getHL7Uri(config.getMdmHost(),config.getMdmPort()))
+            // Process Acks that come back ??
+    ;
+
+    from(getHL7UriDirectory(config.getHl7RDE_Directory()))
+            // Auditing
+            .routeId("hl7RDESimulator")
+            .routeDescription("hl7RDESimulator")
+            .convertBodyTo(String.class)
+            .setProperty("processingtype").constant("hl7-sim")
+            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("industrystd").constant("HL7")
+            .setProperty("messagetrigger").constant("RDE")
+            .setProperty("component").simple("${routeId}")
+            .setProperty("camelID").simple("${camelId}")
+            .setProperty("exchangeID").simple("${exchangeId}")
+            .setProperty("internalMsgID").simple("${id}")
+            .setProperty("bodyData").simple("${body}")
+            .setProperty("processname").constant("Input")
+            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+            .wireTap("direct:auditing")
+            .to(getHL7Uri(config.getRdeHost(),config.getRdePort()))
+            // Process Acks that come back ??
+    ;
+
+    from(getHL7UriDirectory(config.getHl7SCH_Directory()))
+            // Auditing
+            .routeId("hl7SCHSimulator")
+            .routeDescription("hl7SCHSimulator")
+            .convertBodyTo(String.class)
+            .setProperty("processingtype").constant("hl7-sim")
+            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("industrystd").constant("HL7")
+            .setProperty("messagetrigger").constant("SCH")
+            .setProperty("component").simple("${routeId}")
+            .setProperty("camelID").simple("${camelId}")
+            .setProperty("exchangeID").simple("${exchangeId}")
+            .setProperty("internalMsgID").simple("${id}")
+            .setProperty("bodyData").simple("${body}")
+            .setProperty("processname").constant("Input")
+            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+            .wireTap("direct:auditing")
+            .to(getHL7Uri(config.getSchHost(),config.getSchPort()))
+            // Process Acks that come back ??
+    ;
+
+    from(getHL7UriDirectory(config.getHl7VXU_Directory()))
+            // Auditing
+            .routeId("hl7VXUSimulator")
+            .routeDescription("hl7VXUSimulator")
+            .convertBodyTo(String.class)
+            .setProperty("processingtype").constant("hl7-sim")
+            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("industrystd").constant("HL7")
+            .setProperty("messagetrigger").constant("VXU")
+            .setProperty("component").simple("${routeId}")
+            .setProperty("camelID").simple("${camelId}")
+            .setProperty("exchangeID").simple("${exchangeId}")
+            .setProperty("internalMsgID").simple("${id}")
+            .setProperty("bodyData").simple("${body}")
+            .setProperty("processname").constant("Input")
+            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+            .wireTap("direct:auditing")
+            .to(getHL7Uri(config.getVxuHost(),config.getVxuPort()))
+            // Process Acks that come back ??
     ;
   }
 }

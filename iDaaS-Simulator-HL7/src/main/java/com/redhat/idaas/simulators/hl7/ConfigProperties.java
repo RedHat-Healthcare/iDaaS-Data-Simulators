@@ -21,6 +21,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @SuppressWarnings("ConfigurationProperties")
 @ConfigurationProperties(prefix = "idaas")
 public class ConfigProperties {
+
     //Variables
     // Kafka
     private String kafkaBrokers;
@@ -148,10 +149,10 @@ public class ConfigProperties {
         this.ormHost = ormHost;
     }
     public void setOruHost(String oruHost) {
-        this.oruPort = oruHost;
+        this.oruHost = oruHost;
     }
     public void setRdeHost(String rdeHost) {
-        this.rdePort = rdeHost;
+        this.rdeHost = rdeHost;
     }
     public void setMfnHost(String mfnHost) {
         this.mfnHost = mfnHost;
