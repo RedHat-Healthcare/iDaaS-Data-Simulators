@@ -20,6 +20,7 @@ run and any libraries need to be pulled down they can.<br/>
  
 We also leverage [Kafka Tools](https://kafkatool.com/) to help us show Kafka details and transactions..
 
+# Simulators
 
 ## iDaaS Simulator HL7
 Specifically developed to support HL7 Connectivity.
