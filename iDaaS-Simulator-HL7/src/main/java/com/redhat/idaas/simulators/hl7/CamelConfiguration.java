@@ -131,7 +131,9 @@ public class CamelConfiguration extends RouteBuilder {
      * Direct actions used across platform
      *
      */
-    from("direct:auditing").setHeader("messageprocesseddate").simple("${date:now:yyyy-MM-dd}")
+    from("direct:auditing")
+        .routeId("KIC-KnowledgeInsightConformance")
+        .setHeader("messageprocesseddate").simple("${date:now:yyyy-MM-dd}")
         .setHeader("messageprocessedtime").simple("${date:now:HH:mm:ss:SSS}")
         .setHeader("processingtype").exchangeProperty("processingtype")
         .setHeader("industrystd").exchangeProperty("industrystd")
@@ -147,7 +149,9 @@ public class CamelConfiguration extends RouteBuilder {
     /*
      * Direct Logging
      */
-    from("direct:logging").log(LoggingLevel.INFO, log, "Transaction Message: [${body}]");
+    from("direct:logging")
+        .routeId("Logging")
+        .log(LoggingLevel.INFO, log, "Transaction Message: [${body}]");
 
     /*
      *  HL7 File to HL7 Server

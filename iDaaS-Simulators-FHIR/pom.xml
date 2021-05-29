@@ -5,10 +5,10 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.redhat.idaas.simulators.kic</groupId>
-    <artifactId>idaas-simulators-KIC</artifactId>
-    <version>2021-04</version>
-    <name>iDAAS Simulator - KIC</name>
+    <groupId>com.redhat.idaas.simulators.fhir</groupId>
+    <artifactId>idaas-simulators-fhir</artifactId>
+    <version>2021-02</version>
+    <name>iDAAS Simulator - FHIR</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -79,20 +79,6 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-netty4-starter</artifactId>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-amqp-starter</artifactId>
-          </dependency>
-          <dependency>
-            <groupId>org.amqphub.spring</groupId>
-            <artifactId>amqp-10-jms-spring-boot-starter</artifactId>
-          </dependency>
-          <dependency>
-            <groupId>org.messaginghub</groupId>
-            <artifactId>pooled-jms</artifactId>
-          </dependency>
-          -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
