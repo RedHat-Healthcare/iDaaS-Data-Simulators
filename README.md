@@ -18,3 +18,4 @@ auto.offset.reset=earliest <br/>
 3. An internet connection with active internet connectivity, this is to ensure that if any Maven commands are
 run and any libraries need to be pulled down they can.<br/>
  
+Withn each specific module there are specific Readme instructions for each component, please follow those. If there are any issues please feel free to open an issues. We also enjoy feedback to improve so please feel free to open a discussion as well.
