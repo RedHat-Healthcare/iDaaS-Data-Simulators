@@ -85,20 +85,6 @@ public class CamelConfiguration extends RouteBuilder {
   private ConfigProperties config;
 
   @Bean
-  private HL7MLLPNettyEncoderFactory hl7Encoder() {
-    HL7MLLPNettyEncoderFactory hl7mllp = new HL7MLLPNettyEncoderFactory();
-    hl7mllp.setCharset("iso-8859-1");
-    //encoder.setConvertLFtoCR(true);
-    return hl7mllp;
-  }
-  @Bean
-  private HL7MLLPNettyDecoderFactory hl7Decoder() {
-    HL7MLLPNettyDecoderFactory decoder = new HL7MLLPNettyDecoderFactory();
-    decoder.setCharset("iso-8859-1");
-    return decoder;
-  }
-
-  @Bean
   private KafkaEndpoint kafkaEndpoint() {
     KafkaEndpoint kafkaEndpoint = new KafkaEndpoint();
     return kafkaEndpoint;
@@ -114,15 +100,16 @@ public class CamelConfiguration extends RouteBuilder {
     return "kafka:" + topic + "?brokers=" + config.getKafkaBrokers();
   }
 
+
   private String getHL7Uri(String hostID, int port) {
-    String portNumber = String.valueOf(port);
-    String svrConnection = "netty4:tcp://"+ hostID +":" + portNumber + "?sync=true&decoder=#hl7Decoder&encoder=#hl7Encoder";
-    return svrConnection;
+    String mllpConnection = "mllp:"+ hostID + ":" + port;
+    return mllpConnection;
   }
 
   private String getHL7UriDirectory(String dirName) {
-    return "file:src/" + dirName + "?delete=true?noop=true";
+    return "file:src/" + dirName + "?delete=true";
   }
+
 
   @Override
   public void configure() throws Exception {
@@ -164,7 +151,7 @@ public class CamelConfiguration extends RouteBuilder {
             .routeDescription("hl7ADTSimulator")
             .convertBodyTo(String.class)
             .setProperty("processingtype").constant("hl7-sim")
-            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
             .setProperty("industrystd").constant("HL7")
             .setProperty("messagetrigger").constant("ADT")
             .setProperty("component").simple("${routeId}")
@@ -177,151 +164,287 @@ public class CamelConfiguration extends RouteBuilder {
             .wireTap("direct:auditing")
             .to(getHL7Uri(config.getAdtHost(),config.getAdtPort()))
             // Process Acks that come back ??
+            .choice().when(simple("{{idaas.adtACKResponse}}"))
+                .convertBodyTo(String.class)
+                // set Auditing Properties – will be inside a loop one per defined resource
+                .setProperty("processingtype").constant("hl7-sim")
+                .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
+                .setProperty("industrystd").constant("HL7")
+                .setProperty("messagetrigger").constant("ADT")
+                .setProperty("component").simple("${routeId}")
+                .setProperty("processname").constant("Response")
+                .setProperty("camelID").simple("${camelId}")
+                .setProperty("exchangeID").simple("${exchangeId}")
+                .setProperty("internalMsgID").simple("${id}")
+                .setProperty("bodyData").simple("${body}")
+                .setProperty("auditdetails").constant("ACK Processed")
+                // iDAAS DataHub Processing
+                .wireTap("direct:auditing")// Invoke External FHIR Server
+           .endChoice();
         ;
 
     from(getHL7UriDirectory(config.getHl7ORM_Directory()))
-            // Auditing
-            .routeId("hl7ORMSimulator")
-            .routeDescription("hl7ORMSimulator")
+        // Auditing
+        .routeId("hl7ORMSimulator")
+        .routeDescription("hl7ORMSimulator")
+        .convertBodyTo(String.class)
+        .setProperty("processingtype").constant("hl7-sim")
+        .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
+        .setProperty("industrystd").constant("HL7")
+        .setProperty("messagetrigger").constant("ORM")
+        .setProperty("component").simple("${routeId}")
+        .setProperty("camelID").simple("${camelId}")
+        .setProperty("exchangeID").simple("${exchangeId}")
+        .setProperty("internalMsgID").simple("${id}")
+        .setProperty("bodyData").simple("${body}")
+        .setProperty("processname").constant("Input")
+        .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+        .wireTap("direct:auditing")
+        .to(getHL7Uri(config.getOrmHost(),config.getOrmPort()))
+        // Process Acks that come back
+        .choice().when(simple("{{idaas.ormACKResponse}}"))
             .convertBodyTo(String.class)
+            // set Auditing Properties – will be inside a loop one per defined resource
             .setProperty("processingtype").constant("hl7-sim")
-            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
             .setProperty("industrystd").constant("HL7")
             .setProperty("messagetrigger").constant("ORM")
             .setProperty("component").simple("${routeId}")
+            .setProperty("processname").constant("Response")
             .setProperty("camelID").simple("${camelId}")
             .setProperty("exchangeID").simple("${exchangeId}")
             .setProperty("internalMsgID").simple("${id}")
             .setProperty("bodyData").simple("${body}")
-            .setProperty("processname").constant("Input")
-            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
-            .wireTap("direct:auditing")
-            .to(getHL7Uri(config.getOrmHost(),config.getOrmPort()))
-            // Process Acks that come back ??
+            .setProperty("auditdetails").constant("ACK Processed")
+            // iDAAS DataHub Processing
+            .wireTap("direct:auditing")// Invoke External FHIR Server
+        .endChoice();
     ;
     from(getHL7UriDirectory(config.getHl7ORU_Directory()))
-            // Auditing
-            .routeId("hl7ORUSimulator")
-            .routeDescription("hl7ORUSimulator")
+        // Auditing
+        .routeId("hl7ORUSimulator")
+        .routeDescription("hl7ORUSimulator")
+        .convertBodyTo(String.class)
+        .setProperty("processingtype").constant("hl7-sim")
+        .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
+        .setProperty("industrystd").constant("HL7")
+        .setProperty("messagetrigger").constant("ORU")
+        .setProperty("component").simple("${routeId}")
+        .setProperty("camelID").simple("${camelId}")
+        .setProperty("exchangeID").simple("${exchangeId}")
+        .setProperty("internalMsgID").simple("${id}")
+        .setProperty("bodyData").simple("${body}")
+        .setProperty("processname").constant("Input")
+        .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+        .wireTap("direct:auditing")
+        .to(getHL7Uri(config.getOruHost(),config.getOruPort()))
+        // Process Acks that come back
+        .choice().when(simple("{{idaas.oruACKResponse}}"))
             .convertBodyTo(String.class)
+            // set Auditing Properties – will be inside a loop one per defined resource
             .setProperty("processingtype").constant("hl7-sim")
-            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
             .setProperty("industrystd").constant("HL7")
             .setProperty("messagetrigger").constant("ORU")
             .setProperty("component").simple("${routeId}")
+            .setProperty("processname").constant("Response")
             .setProperty("camelID").simple("${camelId}")
             .setProperty("exchangeID").simple("${exchangeId}")
             .setProperty("internalMsgID").simple("${id}")
             .setProperty("bodyData").simple("${body}")
-            .setProperty("processname").constant("Input")
-            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
-            .wireTap("direct:auditing")
-            .to(getHL7Uri(config.getOruHost(),config.getOruPort()))
-            // Process Acks that come back ??
+            .setProperty("auditdetails").constant("ACK Processed")
+            // iDAAS DataHub Processing
+            .wireTap("direct:auditing")// Invoke External FHIR Server
+        .endChoice();
     ;
     from(getHL7UriDirectory(config.getHl7MFN_Directory()))
-            // Auditing
-            .routeId("hl7MFNSimulator")
-            .routeDescription("hl7MFNSimulator")
+        // Auditing
+        .routeId("hl7MFNSimulator")
+        .routeDescription("hl7MFNSimulator")
+        .convertBodyTo(String.class)
+        .setProperty("processingtype").constant("hl7-sim")
+        .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
+        .setProperty("industrystd").constant("HL7")
+        .setProperty("messagetrigger").constant("MFN")
+        .setProperty("component").simple("${routeId}")
+        .setProperty("camelID").simple("${camelId}")
+        .setProperty("exchangeID").simple("${exchangeId}")
+        .setProperty("internalMsgID").simple("${id}")
+        .setProperty("bodyData").simple("${body}")
+        .setProperty("processname").constant("Input")
+        .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+        .wireTap("direct:auditing")
+        .to(getHL7Uri(config.getMfnHost(),config.getMfnPort()))
+        // Process Acks that come back
+        .choice().when(simple("{{idaas.mfnACKResponse}}"))
             .convertBodyTo(String.class)
+            // set Auditing Properties – will be inside a loop one per defined resource
             .setProperty("processingtype").constant("hl7-sim")
-            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
             .setProperty("industrystd").constant("HL7")
             .setProperty("messagetrigger").constant("MFN")
             .setProperty("component").simple("${routeId}")
+            .setProperty("processname").constant("Response")
             .setProperty("camelID").simple("${camelId}")
             .setProperty("exchangeID").simple("${exchangeId}")
             .setProperty("internalMsgID").simple("${id}")
             .setProperty("bodyData").simple("${body}")
-            .setProperty("processname").constant("Input")
-            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
-            .wireTap("direct:auditing")
-            .to(getHL7Uri(config.getMfnHost(),config.getMfnPort()))
-            // Process Acks that come back ??
+            .setProperty("auditdetails").constant("ACK Processed")
+            // iDAAS DataHub Processing
+            .wireTap("direct:auditing")// Invoke External FHIR Server
+        .endChoice();
     ;
 
     from(getHL7UriDirectory(config.getHl7MDM_Directory()))
-            // Auditing
-            .routeId("hl7MDMSimulator")
-            .routeDescription("hl7MDMSimulator")
+        // Auditing
+        .routeId("hl7MDMSimulator")
+        .routeDescription("hl7MDMSimulator")
+        .convertBodyTo(String.class)
+        .setProperty("processingtype").constant("hl7-sim")
+        .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
+        .setProperty("industrystd").constant("HL7")
+        .setProperty("messagetrigger").constant("MDM")
+        .setProperty("component").simple("${routeId}")
+        .setProperty("camelID").simple("${camelId}")
+        .setProperty("exchangeID").simple("${exchangeId}")
+        .setProperty("internalMsgID").simple("${id}")
+        .setProperty("bodyData").simple("${body}")
+        .setProperty("processname").constant("Input")
+        .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+        .wireTap("direct:auditing")
+        .to(getHL7Uri(config.getMdmHost(),config.getMdmPort()))
+        // Process Acks that come back
+        .choice().when(simple("{{idaas.mdmACKResponse}}"))
             .convertBodyTo(String.class)
+            // set Auditing Properties – will be inside a loop one per defined resource
             .setProperty("processingtype").constant("hl7-sim")
-            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
             .setProperty("industrystd").constant("HL7")
             .setProperty("messagetrigger").constant("MDM")
             .setProperty("component").simple("${routeId}")
+            .setProperty("processname").constant("Response")
             .setProperty("camelID").simple("${camelId}")
             .setProperty("exchangeID").simple("${exchangeId}")
             .setProperty("internalMsgID").simple("${id}")
             .setProperty("bodyData").simple("${body}")
-            .setProperty("processname").constant("Input")
-            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
-            .wireTap("direct:auditing")
-            .to(getHL7Uri(config.getMdmHost(),config.getMdmPort()))
-            // Process Acks that come back ??
+            .setProperty("auditdetails").constant("ACK Processed")
+            // iDAAS DataHub Processing
+            .wireTap("direct:auditing")// Invoke External FHIR Server
+        .endChoice();
     ;
 
     from(getHL7UriDirectory(config.getHl7RDE_Directory()))
-            // Auditing
-            .routeId("hl7RDESimulator")
-            .routeDescription("hl7RDESimulator")
+         // Auditing
+         .routeId("hl7RDESimulator")
+         .routeDescription("hl7RDESimulator")
+         .convertBodyTo(String.class)
+         .setProperty("processingtype").constant("hl7-sim")
+         .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
+         .setProperty("industrystd").constant("HL7")
+         .setProperty("messagetrigger").constant("RDE")
+         .setProperty("component").simple("${routeId}")
+         .setProperty("camelID").simple("${camelId}")
+         .setProperty("exchangeID").simple("${exchangeId}")
+         .setProperty("internalMsgID").simple("${id}")
+         .setProperty("bodyData").simple("${body}")
+         .setProperty("processname").constant("Input")
+         .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+         .wireTap("direct:auditing")
+         .to(getHL7Uri(config.getRdeHost(),config.getRdePort()))
+         // Process Acks that come back
+         .choice().when(simple("{{idaas.rdeACKResponse}}"))
             .convertBodyTo(String.class)
+            // set Auditing Properties – will be inside a loop one per defined resource
             .setProperty("processingtype").constant("hl7-sim")
-            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
             .setProperty("industrystd").constant("HL7")
             .setProperty("messagetrigger").constant("RDE")
             .setProperty("component").simple("${routeId}")
+            .setProperty("processname").constant("Response")
             .setProperty("camelID").simple("${camelId}")
             .setProperty("exchangeID").simple("${exchangeId}")
             .setProperty("internalMsgID").simple("${id}")
             .setProperty("bodyData").simple("${body}")
-            .setProperty("processname").constant("Input")
-            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
-            .wireTap("direct:auditing")
-            .to(getHL7Uri(config.getRdeHost(),config.getRdePort()))
-            // Process Acks that come back ??
+            .setProperty("auditdetails").constant("ACK Processed")
+            // iDAAS DataHub Processing
+            .wireTap("direct:auditing")// Invoke External FHIR Server
+        .endChoice();
     ;
 
     from(getHL7UriDirectory(config.getHl7SCH_Directory()))
-            // Auditing
-            .routeId("hl7SCHSimulator")
-            .routeDescription("hl7SCHSimulator")
+        // Auditing
+        .routeId("hl7SCHSimulator")
+        .routeDescription("hl7SCHSimulator")
+        .convertBodyTo(String.class)
+        .setProperty("processingtype").constant("hl7-sim")
+        .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
+        .setProperty("industrystd").constant("HL7")
+        .setProperty("messagetrigger").constant("SCH")
+        .setProperty("component").simple("${routeId}")
+        .setProperty("camelID").simple("${camelId}")
+        .setProperty("exchangeID").simple("${exchangeId}")
+        .setProperty("internalMsgID").simple("${id}")
+        .setProperty("bodyData").simple("${body}")
+        .setProperty("processname").constant("Input")
+        .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+        .wireTap("direct:auditing")
+        .to(getHL7Uri(config.getSchHost(),config.getSchPort()))
+        // Process Acks that come back
+        .choice().when(simple("{{idaas.schACKResponse}}"))
             .convertBodyTo(String.class)
+            // set Auditing Properties – will be inside a loop one per defined resource
             .setProperty("processingtype").constant("hl7-sim")
-            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
             .setProperty("industrystd").constant("HL7")
             .setProperty("messagetrigger").constant("SCH")
             .setProperty("component").simple("${routeId}")
+            .setProperty("processname").constant("Response")
             .setProperty("camelID").simple("${camelId}")
             .setProperty("exchangeID").simple("${exchangeId}")
             .setProperty("internalMsgID").simple("${id}")
             .setProperty("bodyData").simple("${body}")
-            .setProperty("processname").constant("Input")
-            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
-            .wireTap("direct:auditing")
-            .to(getHL7Uri(config.getSchHost(),config.getSchPort()))
-            // Process Acks that come back ??
+            .setProperty("auditdetails").constant("ACK Processed")
+            // iDAAS DataHub Processing
+            .wireTap("direct:auditing")// Invoke External FHIR Server
+        .endChoice();
     ;
 
     from(getHL7UriDirectory(config.getHl7VXU_Directory()))
-            // Auditing
-            .routeId("hl7VXUSimulator")
-            .routeDescription("hl7VXUSimulator")
+        // Auditing
+        .routeId("hl7VXUSimulator")
+        .routeDescription("hl7VXUSimulator")
+        .convertBodyTo(String.class)
+        .setProperty("processingtype").constant("hl7-sim")
+        .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
+        .setProperty("industrystd").constant("HL7")
+        .setProperty("messagetrigger").constant("VXU")
+        .setProperty("component").simple("${routeId}")
+        .setProperty("camelID").simple("${camelId}")
+        .setProperty("exchangeID").simple("${exchangeId}")
+        .setProperty("internalMsgID").simple("${id}")
+        .setProperty("bodyData").simple("${body}")
+        .setProperty("processname").constant("Input")
+        .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
+        .wireTap("direct:auditing")
+        .to(getHL7Uri(config.getVxuHost(),config.getVxuPort()))
+        // Process Acks that come back
+        .choice().when(simple("{{idaas.vxuACKResponse}}"))
             .convertBodyTo(String.class)
+            // set Auditing Properties – will be inside a loop one per defined resource
             .setProperty("processingtype").constant("hl7-sim")
-            .setProperty("appname").constant("iDAAS-Connect-ThirdParty")
+            .setProperty("appname").constant("iDaaS-DataSimulator-HL7")
             .setProperty("industrystd").constant("HL7")
             .setProperty("messagetrigger").constant("VXU")
             .setProperty("component").simple("${routeId}")
+            .setProperty("processname").constant("Response")
             .setProperty("camelID").simple("${camelId}")
             .setProperty("exchangeID").simple("${exchangeId}")
             .setProperty("internalMsgID").simple("${id}")
             .setProperty("bodyData").simple("${body}")
-            .setProperty("processname").constant("Input")
-            .setProperty("auditdetails").constant("${file:name} - was processed, parsed and put into topic")
-            .wireTap("direct:auditing")
-            .to(getHL7Uri(config.getVxuHost(),config.getVxuPort()))
-            // Process Acks that come back ??
+            .setProperty("auditdetails").constant("ACK Processed")
+            // iDAAS DataHub Processing
+            .wireTap("direct:auditing")// Invoke External FHIR Server
+        .endChoice();
     ;
   }
 }

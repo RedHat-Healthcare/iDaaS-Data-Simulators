@@ -7,7 +7,7 @@
 
     <groupId>com.redhat.idaas.simulators.hl7</groupId>
     <artifactId>idaas-simulators-hl7</artifactId>
-    <version>2021-02</version>
+    <version>5.01</version>
     <name>iDAAS Simulator - HL7</name>
 
     <properties>
@@ -25,7 +25,9 @@
         <!-- Red Hat 7.6
         <fuse.version>7.6.0.fuse-760027-redhat-00001</fuse.version>-->
         <!-- Red Hat Fuse 7.8 -->
-        <fuse.version>7.8.0.fuse-sb2-780038-redhat-00001</fuse.version>
+        <!--<fuse.version>7.8.0.fuse-sb2-780038-redhat-00001</fuse.version>-->
+        <!-- Red Hat Fuse 7.9 -->
+        <fuse.version>7.9.0.fuse-sb2-790065-redhat-00001</fuse.version>
     </properties>
 
     <dependencyManagement>
@@ -67,42 +69,77 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-spring-boot-starter</artifactId>
         </dependency>
+        <!-- Apache Camel Components -->
+        <!-- HL7 -->
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-hl7-starter</artifactId>
+            <artifactId>camel-hl7</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-fhir-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-netty4-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <!-- Added for Camel Kafka -->
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-kafka</artifactId>
-            <version>2.23.2.fuse-760030-redhat-00001</version>
+            <artifactId>camel-mllp</artifactId>
         </dependency>
         <!-- Servlet -->
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-servlet</artifactId>
         </dependency>
+        <!--Kafka -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-kafka</artifactId>
+        </dependency>
+        <!-- Bean -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-bean</artifactId>
+            <version>3.10.0.fuse-800010-redhat-00001</version>
+        </dependency>
+        <!-- HL7 HAPI Specific Camel Support Libraries-->
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-structures-v21</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-structures-v22</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-structures-v23</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-structures-v231</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-structures-v24</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-structures-v25</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-structures-v251</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-structures-v26</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!-- PDF -->
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-pdf</artifactId>
-        </dependency>
-        <!-- Netty -->
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-netty4-starter</artifactId>
         </dependency>
         <!-- Spring Boot Actuator -->
         <dependency>
@@ -161,7 +198,7 @@
     </pluginRepositories>
 
     <build>
-        <finalName>idaas-connect-hl7</finalName>
+        <finalName>idaas-simulators-hl7</finalName>
         <plugins>
             <plugin>
                 <groupId>org.jboss.redhat-fuse</groupId>
