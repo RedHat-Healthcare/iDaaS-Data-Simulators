@@ -5,7 +5,7 @@
 
     <groupId>com.redhat.idaas.simulators.hl7</groupId>
     <artifactId>idaas-simulators-hl7</artifactId>
-    <version>4.0.1</version>
+    <version>5.01</version>
     <name>iDAAS Simulator - HL7</name>
 
     <properties>
