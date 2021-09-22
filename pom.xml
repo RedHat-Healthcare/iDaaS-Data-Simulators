@@ -6,7 +6,7 @@
 
     <groupId>com.redhat.idaas.simulators</groupId>
     <artifactId>idaas-data-simulators</artifactId>
-    <version>5.0.1-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <name>iDAAS Data Simulators</name>
     <packaging>pom</packaging>
 
@@ -28,7 +28,7 @@
     <modules>
       <module>Simulator-FHIR</module>
       <module>Simulator-HL7</module>
-    	<module>Simulator-KIC</module>
+      <module>Simulator-KIC</module>
       <module>Simulator-ThirdParty</module>
     </modules>
 
