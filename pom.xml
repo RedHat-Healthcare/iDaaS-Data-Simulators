@@ -29,7 +29,7 @@
       <module>Simulator-FHIR</module>
       <module>Simulator-HL7</module>
       <module>Simulator-KIC</module>
-      <module>Simulator-ThirdParty</module>
+      <!--<module>Simulator-ThirdParty</module>-->
     </modules>
 
     <profiles>
