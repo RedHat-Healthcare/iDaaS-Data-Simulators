@@ -6,7 +6,7 @@
 
     <groupId>com.redhat.idaas.simulators</groupId>
     <artifactId>idaas-data-simulators</artifactId>
-    <version>4.0.2-SNAPSHOT</version>
+    <version>5.0.2-SNAPSHOT</version>
     <name>iDAAS Data Simulators</name>
     <packaging>pom</packaging>
 
