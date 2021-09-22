@@ -7,7 +7,7 @@
 
     <groupId>com.redhat.idaas.simulators.fhir</groupId>
     <artifactId>idaas-simulators-fhir</artifactId>
-    <version>2021-02</version>
+    <version>05.01</version>
     <name>iDAAS Simulator - FHIR</name>
 
     <properties>
