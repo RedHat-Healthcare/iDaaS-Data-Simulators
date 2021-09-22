@@ -7,7 +7,7 @@
 
     <groupId>com.redhat.idaas.simulators.thirdParty</groupId>
     <artifactId>idaas-simulators-thirdparty</artifactId>
-    <version>2021-06</version>
+    <version>05.01</version>
     <name>iDAAS Simulator - Third Party</name>
 
     <properties>
