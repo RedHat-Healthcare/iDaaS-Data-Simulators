@@ -7,7 +7,7 @@
 
     <groupId>com.redhat.idaas.simulators.kic</groupId>
     <artifactId>idaas-simulators-KIC</artifactId>
-    <version>2021-04</version>
+    <version>05.01</version>
     <name>iDAAS Simulator - KIC</name>
 
     <properties>
